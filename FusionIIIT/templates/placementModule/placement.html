@@ -160,19 +160,44 @@
           </div>
 
           <div class="{% if form5.errors %}ui tab{% else %}ui active tab{% endif %}" data-tab="placementschedule">
-            <div class="ui grid">
-              <div class="thirteen wide column">
-                <label>Company Name:</label>
-                <div class="ui fluid large input">
-                    <input type="text" id="sch_searchbar_text" placeholder="Search">
-                </div>
-              </div>
+            {% for c3 in current2 %}
+              {% if c3.designation.name == 'placement officer' %}
+                <div class="ui grid">
+                  <div class="thirteen wide column">
+                    <label>Company Name:</label>
+                    <div class="ui fluid large input">
+                        <input type="text" id="sch_searchbar_text" placeholder="Search">
+                    </div>
+                  </div>
 
-              <div class="three wide column">
-                <label><br></label>
-                <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
-              </div>
-            </div>
+                  <div class="three wide column">
+                    <label><br></label>
+                    <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+
+            {% for c in current1 %}
+              {% if c.designation.name == 'placement chairman' %}
+                <div class="ui grid">
+                  <div class="thirteen wide column">
+                    <label>Company Name:</label>
+                    <div class="ui fluid large input">
+                        <input type="text" id="sch_searchbar_text" placeholder="Search">
+                    </div>
+                  </div>
+
+                  <div class="three wide column">
+                    <label><br></label>
+                    <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+
             <div class="ui vertical segment">
                 {% for c in current %}
                   {% if c.designation.name == 'student' %}
@@ -194,6 +219,7 @@
                                       </div>
                                       <div class="ui secondary segment">
                                         <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
+                                        <p>{{ ps.notify_id.get_placement_schedule_object.placement_date }} | {{ ps.notify_id.get_placement_schedule_object.time }}</p>
                                         <p>{{ ps.notify_id.description }} </p>
                                       </div>
                                       {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
@@ -205,6 +231,11 @@
                                         <div class="ui secondary red inverted segment">
                                           <p>Invitation was <b>{{ ps.invitation}}.</b></p>
                                         </div>
+                                      {% endif %}
+                                      {% if ps.invitation == 'IGNORE' %}
+                                      <div class="ui secondary grey inverted segment">
+                                        <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                      </div>
                                       {% endif %}
                                     </div>
                                   </span>
@@ -240,7 +271,7 @@
                                       </div>
                                       <div class="ui secondary segment">
                                         <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                                        <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                        <p><b>{{ sch.title }} </b>| {{ sch.role.role }} </p>
                                         <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
                                         <p>Job Description: {{ sch.description }}</p>
                                       </div>
@@ -303,7 +334,7 @@
                                      </div>
                                      <div class="ui secondary segment">
                                        <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                                       <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                       <p><b>{{ sch.title }} </b>| {{ sch.get_role }} </p>
                                        <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
                                        <p>Job Description: {{ sch.description }}</p>
                                      </div>
@@ -383,6 +414,9 @@
                                             <div class="ui fluid large input">
                                                 {% comment %}The Institute Name input!{% endcomment %}
                                                 {{ form5.company_name }}
+                                                <datalist class="company_dropdown" id="company_dropdown1">
+
+                                                </datalist>
                                             </div>
                                         </div>
 
@@ -437,6 +471,14 @@
                                                 {% comment %}The Location input!{% endcomment %}
                                                 {{ form5.description }}
                                         </div>
+                                    </div>
+                                    <div class="field">
+                                        <label>Role Offered</label>
+                                          <input list="dropdown-menu1" name="role" id="txt_Search" type="text" />
+                                          <datalist class="dropdown-menu" id="dropdown-menu1">
+
+                                          </datalist>
+
                                     </div>
                                     <input type="file" name="attached_file">
                                     <div class="field">
@@ -580,7 +622,7 @@
                 <div class="ui styled accordion">
                     <div class="title">
                         <i class="dropdown icon"></i>
-                        Want a C.V.?
+                        Download a C.V.?
                         <div class="ui divider"></div>
                     </div>
                     <div class="content">
@@ -628,7 +670,7 @@
                             </div>
                             <br><br>
 
-                          <button type="submit" class="ui primary large button">Generate</button>
+                          <button type="submit" class="ui primary large button">Download</button>
                     </form>
                     </div>
                 </div>
@@ -654,7 +696,7 @@
 {% endblock %}
 
 
-{%  block javascript %}
+{% block javascript %}
     <link rel="stylesheet" src="{% static 'globals/css/jquery.clockinput.css' %}">
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/checkbox.js' %}"></script>
@@ -667,6 +709,63 @@
 
 
     <script type="text/javascript">
+
+      //---------------------role add dropdown----------------------------------------------------
+
+      // Ajax for company dropdown when adding schedule input values
+      $('#company_input').keyup( function(){
+        current_value = $('#company_input').val();
+
+        $.ajax({
+          type: 'POST',
+          url: '/placement/companyname_dropdown/',
+          data: {
+            'current_value': current_value,
+            'csrfmiddlewaretoken': '{{csrf_token}}'
+          },
+          dataType: 'json',
+          success: function(response){
+            $('.company_dropdown').html('');
+            for(var i=0;i<response.company_names.length;i++){
+
+              console.log(response.company_names[i]);
+              $('.company_dropdown').append('<option value="'+response.company_names[i]+'">'+response.company_names[i]+'</option>');
+            }
+          },
+          error: function(rs, e){
+            console.log('error');
+          },
+        });
+      });
+
+      // Ajax for role dropdown
+      $('#txt_Search').keyup( function(){
+        current_value = $('#txt_Search').val();
+
+        $.ajax({
+          type: 'POST',
+          url: '/placement/checking_roles/',
+          data: {
+            'current_value': current_value,
+            'csrfmiddlewaretoken': '{{csrf_token}}'
+          },
+          dataType: 'json',
+          success: function(response){
+            $('.dropdown-menu').html('');
+            for(var i=0;i<response.all_roles.length;i++){
+
+              console.log(response.all_roles[i]);
+              $('.dropdown-menu').append('<option value="'+response.all_roles[i]+'">'+response.all_roles[i]+'</option>');
+            }
+          },
+          error: function(rs, e){
+            console.log('error');
+          },
+        });
+      });
+
+
+      //----------------------calender--------------------------------
 
       function getToday(){
         return new Date();
@@ -687,16 +786,13 @@
         }
       });
 
-
-
-
       //-------------------------search bar for placement schedule --------------------
         $('#sch_searchbar_btn').click(function(){
             console.log('search button is clicked');
 
             var search_string = $('#sch_searchbar_text').val();
 
-            console.log('search button is clicked  '+search_string);
+            console.log('search button is clicked  ' + search_string);
 
             $('.content_item').each(function(){
                 console.log(this.id);
@@ -716,10 +812,6 @@
               $(obj).click();
             });
         }
-
-
-
-
     </script>
 
     <script type="text/javascript" src="{% static 'globals/js/progress.js' %}"></script>

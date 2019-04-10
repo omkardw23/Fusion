@@ -25,6 +25,7 @@ class Constants:
         ('ACCEPTED', 'Accepted'),
         ('REJECTED', 'Rejected'),
         ('PENDING', 'Pending'),
+        ('IGNORE', 'IGNORE'),
     )
 
     PLACEMENT_TYPE = (
@@ -226,6 +227,23 @@ class NotifyStudent(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.company_name, self.placement_type)
 
+    @property
+    def get_placement_schedule_object(self):
+        return PlacementSchedule.objects.filter(notify_id=self.id).first()
+
+
+class Role(models.Model):
+    role = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.role
+
+class CompanyDetails(models.Model):
+    company_name = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.company_name
+
 
 class PlacementStatus(models.Model):
     notify_id = models.ForeignKey(NotifyStudent, on_delete=models.CASCADE)
@@ -235,9 +253,14 @@ class PlacementStatus(models.Model):
     placed = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,
                               default='NOT PLACED')
     timestamp = models.DateTimeField(auto_now=True)
+    no_of_days = models.IntegerField(default=10, null=True, blank=True)
 
     class Meta:
         unique_together = (('notify_id', 'unique_id'),)
+
+    @property
+    def response_date(self):
+        return self.timestamp+datetime.timedelta(days=self.no_of_days)
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.notify_id.company_name)
@@ -285,11 +308,19 @@ class PlacementSchedule(models.Model):
     location = models.CharField(max_length=100, default='')
     description = models.TextField(max_length=500, default='', null=True, blank=True)
     time = models.TimeField()
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
     attached_file = models.FileField(upload_to='documents/placement/schedule', null=True, blank=True)
     schedule_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now, blank=True, null=True)
 
     def __str__(self):
         return '{} - {}'.format(self.notify_id.company_name, self.placement_date)
+
+    @property
+    def get_role(self):
+        try:
+            return self.role.role
+        except:
+            return ''
 
 
 class StudentPlacement(models.Model):

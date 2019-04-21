@@ -50,16 +50,16 @@
 			        <h4> Academics Module </h4>
 			    </a>
 			    {% endif %}
-
+-->
           <a class = "item" href="/gymkhana">
               <h4> Gymkhana Module </h4>
-          </a>-->
-            
-		
+          </a>
+
+
     			    <a class="item" href="{% url 'spacs:spacs' %}">
                                 <h4>Awards & Scholarship</h4>
                             </a>
-		
+
                            <a class="item" href="{% url 'complaint:complaint' %}">
                                 <h4>Complaint Module</h4>
                             </a>
@@ -87,10 +87,10 @@
                             <a class="item" href="/library/library">
                                 <h4>Library Module</h4>
                             </a>
-<!--			    <a class="item" href="{% url 'filetracking:filetracking' %}">
+			    <a class="item" href="{% url 'filetracking:filetracking' %}">
 				<h4> File Tracking </h4>
 		            </a>
-		           -->
+		           
                         </div>
                     </div>
                 </div>
@@ -98,12 +98,12 @@
             <!--The Modules Accordian ends here!-->
 
             <!--The Profile Item starts here!-->
-            <a class="centered raised item" href="/dashboard">
+            <a class="centered raised item" href="/profile">
                 <span class="inverted header">Profile</span>
                 <i class="large inverted user icon right floated"></i>
             </a>
             <!--The Profile Item starts here!-->
-{% if "Dean_s" in all_designation %}
+{% if "Junior Superintendent" in all_designation or "Dean_s" in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfDeanStudents'%}">
     <span class="inverted header">Office Of Dean Students</span>
     <i class="large inverted briefcase icon right floated"></i>
@@ -136,12 +136,20 @@
 <!--The email Item ends here!-->
 
 <!--The Profile Item starts here!-->
+{% if "PurchaseOfficer" in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfPurchaseOfficer'%}">
     <span class="inverted header">Office Of Purchase Officer</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
+{% endif %}
 <!--The email Item ends here!-->
 
+{% if "PurchaseOfficer" not in all_designation %}
+<a class="centered raised item" href="{% url 'office:officeOfPurchaseOfficer'%}">
+    <span class="inverted header">Purchase and Sales</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% endif %}
 <!--The Profile Item starts here!-->
 {% if "Registrar" in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfRegistrar'%}">
@@ -152,7 +160,7 @@
 <!--The email Item ends here!-->
 
 <!--The Profile Item starts here!-->
-{% if "Dean (P&D)" in all_designation %}
+{% if 'Civil_JE' in all_designation or 'Civil_AE' in all_designation or 'Electrical_JE' in all_designation or 'Electrical_AE' in all_designation or 'EE' in all_designation or 'DeanPnD' in all_designation or 'Director' in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfDeanPnD'%}">
     <span class="inverted header">Office Of P & D</span>
     <i class="large inverted briefcase icon right floated"></i>
